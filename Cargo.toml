@@ -1,0 +1,11 @@
+[package]
+name = "jaust"
+version = "0.1.0"
+authors = ["zwennesm <zwennesm@protonmail.com>"]
+edition = "2018"
+
+[dependencies]
+rocket = "0.4.1"
+redis = "0.10"
+harsh = "0.1.6"
+serde_json = "1.0"
