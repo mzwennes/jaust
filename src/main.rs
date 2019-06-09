@@ -1,11 +1,15 @@
 #![feature(proc_macro_hygiene, decl_macro, type_alias_enum_variants)]
 
+#[macro_use]
+extern crate rocket;
+
 use std::env;
 use std::path::PathBuf;
 use std::sync::Mutex;
 
-use rocket::{get, routes, State};
+use rocket::http::Status;
 use rocket::response::Redirect;
+use rocket::State;
 
 use crate::repository::Cache;
 use crate::repository::redis::RedisCache;
@@ -15,10 +19,13 @@ mod repository;
 
 
 #[get("/<id>")]
-fn lookup(id: String, cache: State<Mutex<RedisCache>>) -> Redirect {
+fn lookup(id: String, cache: State<Mutex<RedisCache>>) -> Result<Redirect, Status> {
     let cache = cache.lock().unwrap();
-    let long_url = cache.lookup(&id).unwrap();
-    Redirect::to(format!("https://{}", long_url))
+
+    match cache.lookup(&id) {
+        None => Err(Status::NotFound),
+        Some(url) => Ok(Redirect::to(format!("https://{}", url))),
+    }
 }
 
 #[get("/<path..>")]
@@ -35,6 +42,15 @@ fn shorten(path: PathBuf, cache: State<Mutex<RedisCache>>) -> String {
     response.to_string()
 }
 
+#[catch(404)]
+fn not_found() -> String {
+    let error: serde_json::Value = serde_json::json!({
+        "error": "given key could not be found"
+    });
+
+    error.to_string()
+}
+
 fn main() {
     let database_url = env::var("DATABASE_URL")
         .expect("please set the DATABASE_URL env var");
@@ -42,6 +58,7 @@ fn main() {
     let database = repository::redis::RedisCache::new(&database_url);
 
     rocket::ignite()
+        .register(catchers![not_found])
         .manage(Mutex::new(database))
         .mount("/", routes!(lookup))
         .mount("/shorten", routes!(shorten))
