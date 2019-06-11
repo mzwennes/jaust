@@ -1,6 +1,6 @@
 use redis::{Client, Commands, Connection};
 
-use crate::repository::Cache;
+use crate::repository::{Cache, ConnectionError};
 use crate::shortener::{Shortener, UrlShortener};
 
 pub struct RedisCache {
@@ -8,21 +8,21 @@ pub struct RedisCache {
     shortener: UrlShortener,
 }
 
-impl RedisCache {
-    pub fn new(database_url: &str) -> RedisCache {
+impl Cache for RedisCache {
+    fn connect(database_url: &str) -> Result<RedisCache, ConnectionError> {
         let redis = Client::open(database_url)
             .unwrap()
-            .get_connection()
-            .unwrap();
+            .get_connection();
 
-        RedisCache {
-            conn: redis,
-            shortener: UrlShortener::new(),
+        match redis {
+            Ok(conn) => Ok(RedisCache {
+                conn,
+                shortener: UrlShortener::new(),
+            }),
+            Err(error) => Err(ConnectionError)
         }
     }
-}
 
-impl Cache for RedisCache {
     fn store(&mut self, data: &str) -> String {
         let hash = self.shortener.next_id();
         self.conn.set::<_, _, ()>(&hash, data);

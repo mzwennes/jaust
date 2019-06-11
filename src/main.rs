@@ -1,9 +1,10 @@
-#![feature(proc_macro_hygiene, decl_macro, type_alias_enum_variants)]
+#![feature(proc_macro_hygiene, decl_macro, type_alias_enum_variants, bind_by_move_pattern_guards)]
 
 #[macro_use]
 extern crate rocket;
 
 use std::env;
+use std::env::VarError;
 use std::path::PathBuf;
 use std::sync::Mutex;
 
@@ -12,14 +13,14 @@ use rocket::response::Redirect;
 use rocket::State;
 
 use crate::repository::Cache;
-use crate::repository::redis::RedisCache;
+use crate::repository::postgres::PostgresCache;
 
 mod shortener;
 mod repository;
 
 
 #[get("/<id>")]
-fn lookup(id: String, cache: State<Mutex<RedisCache>>) -> Result<Redirect, Status> {
+fn lookup(id: String, cache: State<Mutex<Cache>>) -> Result<Redirect, Status> {
     let cache = cache.lock().unwrap();
 
     match cache.lookup(&id) {
@@ -29,7 +30,7 @@ fn lookup(id: String, cache: State<Mutex<RedisCache>>) -> Result<Redirect, Statu
 }
 
 #[get("/<path..>")]
-fn shorten(path: PathBuf, cache: State<Mutex<RedisCache>>) -> String {
+fn shorten(path: PathBuf, cache: State<Mutex<Cache>>) -> String {
     let url = path.to_str().unwrap();
     let mut cache = cache.lock().unwrap();
     let hash = cache.store(&url);
@@ -52,10 +53,8 @@ fn not_found() -> String {
 }
 
 fn main() {
-    let database_url = env::var("DATABASE_URL")
-        .expect("please set the DATABASE_URL env var");
-
-    let database = repository::redis::RedisCache::new(&database_url);
+    dotenv::dotenv().ok();
+    let database: Box<dyn Cache> = choose_database_backend(env::var("JAUST_DB_TYPE"));
 
     rocket::ignite()
         .register(catchers![not_found])
@@ -63,6 +62,13 @@ fn main() {
         .mount("/", routes!(lookup))
         .mount("/shorten", routes!(shorten))
         .launch();
+}
+
+fn choose_database_backend(backend: Result<String, VarError>) -> Box<dyn Cache> {
+    let database_url = env::var("DATABASE_URL")
+        .expect("please set the DATABASE_URL env var");
+
+    let database = repository::postgres::PostgresCache::connect(&database_url);
 }
 
 #[cfg(test)]

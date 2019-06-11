@@ -1,37 +1,20 @@
-use std::collections::HashMap;
-
-use crate::shortener::{Shortener, UrlShortener};
+use std::fmt;
+use std::write;
 
 pub mod redis;
+pub mod postgres;
+pub mod memory;
+
+pub struct ConnectionError;
+
+impl fmt::Display for ConnectionError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Could not connect to configured backend.")
+    }
+}
 
 pub trait Cache {
+    fn connect(database_url: &str) -> Result<Self, ConnectionError> where Self: Sized + 'static;
     fn store(&mut self, data: &str) -> String;
     fn lookup(&self, id: &str) -> Option<String>;
-}
-
-pub struct InMemoryRepository {
-    urls: HashMap<String, String>,
-    shortener: UrlShortener,
-}
-
-impl InMemoryRepository {
-    pub fn new() -> InMemoryRepository {
-        InMemoryRepository {
-            urls: HashMap::new(),
-            shortener: UrlShortener::new(),
-        }
-    }
-}
-
-impl Cache for InMemoryRepository {
-    fn store(&mut self, data: &str) -> String {
-        let hash = self.shortener.next_id();
-        self.urls.insert(hash.to_string(), data.to_string());
-        hash
-    }
-
-    fn lookup(&self, id: &str) -> Option<String> {
-        let owned = self.urls.get(id).unwrap().to_string();
-        Some(owned)
-    }
 }
