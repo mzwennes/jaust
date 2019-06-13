@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Jaust - Url Shortener</title>
+</head>
+
+<style type="text/css">
+.form{
+	font: 95% Arial, Helvetica, sans-serif;
+	max-width: 400px;
+	margin: 150px auto;
+	padding: 16px;
+	background: #F7F7F7;
+}
+.form h1{
+	background: #f4d142;
+	padding: 20px 0;
+	font-size: 140%;
+	font-weight: 300;
+	text-align: center;
+	color: #fff;
+	margin: -16px -16px 16px -16px;
+}
+.form input[type="text"],
+.form input[type="url"],
+.form select
+{
+	-webkit-transition: all 0.30s ease-in-out;
+	-moz-transition: all 0.30s ease-in-out;
+	-ms-transition: all 0.30s ease-in-out;
+	-o-transition: all 0.30s ease-in-out;
+	outline: none;
+	box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	width: 100%;
+	background: #fff;
+	margin-bottom: 4%;
+	border: 1px solid #ccc;
+	padding: 3%;
+	color: #555;
+	font: 95% Arial, Helvetica, sans-serif;
+}
+.form input[type="text"]:focus,
+.form input[type="url"]:focus,
+.form select:focus
+{
+	box-shadow: 0 0 5px #f4d142;
+	padding: 3%;
+	border: 1px solid #f4d142;
+}
+
+.form input[type="submit"],
+.form input[type="button"]{
+	box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	width: 100%;
+	padding: 3%;
+	background: #f4d142;
+	border-bottom: 2px solid #efcf4f;
+	border-top-style: none;
+	border-right-style: none;
+	border-left-style: none;
+	color: #fff;
+}
+.form input[type="submit"]:hover,
+.form input[type="button"]:hover{
+	background: #efcf4f;
+}
+
+.result {
+    text-align: center;
+    margin: 30px;
+}
+</style>
+
+<body>
+
+    <div class="form">
+        <h1>Jaust Url Shortener</h1>
+        <form action="/shorten" method="post">
+            <input type="url" name="url" id="url" placeholder="https://www.debijenkorf.nl/">
+            <input type="text" name="hash" id="hash" placeholder="Optional short url">
+            <input type="submit" value="Shorten" />
+
+        </form>
+
+        {% if hash %}
+        <div class="result"><span class="hash">{{ hash }}</span></div>
+        {% endif %}
+    </div>
+
+</body>
+</html>
+

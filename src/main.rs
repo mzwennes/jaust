@@ -3,20 +3,28 @@
 #[macro_use]
 extern crate rocket;
 
+use std::collections::HashMap;
 use std::env;
-use std::path::PathBuf;
 use std::sync::Mutex;
 
 use rocket::http::Status;
+use rocket::request::Form;
 use rocket::response::Redirect;
 use rocket::State;
+use rocket_contrib::templates::Template;
 
 use crate::repository::Cache;
 use crate::repository::redis::RedisCache;
+use crate::shortener::{Shortener, UrlShortener};
 
 mod shortener;
 mod repository;
 
+#[derive(FromForm, Debug)]
+struct UrlShortenRequest {
+    url: String,
+    hash: Option<String>,
+}
 
 #[get("/<id>")]
 fn lookup(id: String, cache: State<Mutex<RedisCache>>) -> Result<Redirect, Status> {
@@ -24,22 +32,32 @@ fn lookup(id: String, cache: State<Mutex<RedisCache>>) -> Result<Redirect, Statu
 
     match cache.lookup(&id) {
         None => Err(Status::NotFound),
-        Some(url) => Ok(Redirect::to(format!("https://{}", url))),
+        Some(url) => Ok(Redirect::to(url)),
     }
 }
 
-#[get("/<path..>")]
-fn shorten(path: PathBuf, cache: State<Mutex<RedisCache>>) -> String {
-    let url = path.to_str().unwrap();
+#[get("/console")]
+fn console() -> Template {
+    let context: HashMap<&str, &str> = HashMap::new();
+    Template::render("console", &context)
+}
+
+#[post("/shorten", data = "<request>")]
+fn shorten(request: Form<UrlShortenRequest>, cache: State<Mutex<RedisCache>>) -> Template {
     let mut cache = cache.lock().unwrap();
-    let hash = cache.store(&url);
 
-    let response: serde_json::Value = serde_json::json!({
-        "url": url,
-        "hash": hash
-    });
+    let random_hash = UrlShortener::new().next_id();
 
-    response.to_string()
+    let hash = match &request.hash {
+        Some(user_hash) if !user_hash.is_empty() => user_hash,
+        _ => &random_hash,
+    };
+
+    let result = cache.store(hash, &request.url);
+
+    let mut context: HashMap<&str, &str> = HashMap::new();
+    context.insert("hash", hash);
+    Template::render("console", &context)
 }
 
 #[catch(404)]
@@ -60,8 +78,8 @@ fn main() {
     rocket::ignite()
         .register(catchers![not_found])
         .manage(Mutex::new(database))
-        .mount("/", routes!(lookup))
-        .mount("/shorten", routes!(shorten))
+        .attach(Template::fairing())
+        .mount("/", routes!(lookup, shorten, console))
         .launch();
 }
 
