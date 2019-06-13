@@ -85,16 +85,10 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
-    use crate::repository::{Cache, InMemoryRepository};
+    use crate::repository::Cache;
+    use crate::repository::memory::InMemoryRepository;
 
     #[test]
     pub fn test_cache_store_and_get() {
-        let mut cache = InMemoryRepository::new();
-
-        let long_url = "www.url.com";
-        let short_url = cache.store(long_url);
-        let lookup = cache.lookup(&short_url);
-
-        assert_eq!(&long_url, &lookup.unwrap())
     }
 }
