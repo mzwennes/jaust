@@ -1,37 +1,21 @@
-use std::collections::HashMap;
-
-use crate::shortener::{Shortener, UrlShortener};
+use std::error::Error;
+use std::fmt;
 
 pub mod redis;
+pub mod memory;
+
+#[derive(Debug)]
+pub struct CacheError;
+
+impl Error for CacheError {}
+
+impl fmt::Display for CacheError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Could not write data to storage endpoint.")
+    }
+}
 
 pub trait Cache {
-    fn store(&mut self, data: &str) -> String;
+    fn store(&mut self, key: &str, value: &str) -> Result<(), CacheError>;
     fn lookup(&self, id: &str) -> Option<String>;
-}
-
-pub struct InMemoryRepository {
-    urls: HashMap<String, String>,
-    shortener: UrlShortener,
-}
-
-impl InMemoryRepository {
-    pub fn new() -> InMemoryRepository {
-        InMemoryRepository {
-            urls: HashMap::new(),
-            shortener: UrlShortener::new(),
-        }
-    }
-}
-
-impl Cache for InMemoryRepository {
-    fn store(&mut self, data: &str) -> String {
-        let hash = self.shortener.next_id();
-        self.urls.insert(hash.to_string(), data.to_string());
-        hash
-    }
-
-    fn lookup(&self, id: &str) -> Option<String> {
-        let owned = self.urls.get(id).unwrap().to_string();
-        Some(owned)
-    }
 }
