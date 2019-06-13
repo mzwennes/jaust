@@ -8,6 +8,5 @@ RUN cargo build --release
 
 FROM scratch
 COPY --from=builder \
-    /home/rust/src/target/x86_64-unknown-linux-musl/release/jaust \
-    /usr/local/bin/
-CMD /usr/local/bin/jaust
+    /home/rust/src/target/x86_64-unknown-linux-musl/release/jaust /
+CMD ["/jaust"]
