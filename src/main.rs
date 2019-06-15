@@ -1,6 +1,8 @@
 #![feature(proc_macro_hygiene, decl_macro, type_alias_enum_variants)]
 
 #[macro_use]
+extern crate diesel;
+#[macro_use]
 extern crate rocket;
 
 use std::collections::HashMap;
@@ -85,8 +87,6 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
-    use crate::repository::Cache;
-    use crate::repository::memory::InMemoryRepository;
 
     #[test]
     pub fn test_cache_store_and_get() {

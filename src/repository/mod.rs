@@ -2,7 +2,9 @@ use std::error::Error;
 use std::fmt;
 
 pub mod redis;
+pub mod postgres;
 pub mod memory;
+pub mod schema;
 
 #[derive(Debug)]
 pub struct CacheError;

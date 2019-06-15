@@ -1,0 +1,1 @@
+DROP TABLE hashed_urls;

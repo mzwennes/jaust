@@ -81,7 +81,7 @@
     <div class="form">
         <h1>Jaust Url Shortener</h1>
         <form action="/shorten" method="post">
-            <input type="url" name="url" id="url" placeholder="https://www.debijenkorf.nl/">
+            <input type="url" name="url" id="url" placeholder="https://www.example.com/">
             <input type="text" name="hash" id="hash" placeholder="Optional short url">
             <input type="submit" value="Shorten" />
 
