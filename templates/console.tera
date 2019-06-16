@@ -6,6 +6,18 @@
 </head>
 
 <style type="text/css">
+
+body{
+background:
+    radial-gradient(circle farthest-side at 0% 50%,#fb1 23.5%,rgba(240,166,17,0) 0)21px 30px,
+    radial-gradient(circle farthest-side at 0% 50%,#B71 24%,rgba(240,166,17,0) 0)19px 30px,
+    linear-gradient(#fb1 14%,rgba(240,166,17,0) 0, rgba(240,166,17,0) 85%,#fb1 0)0 0,
+    linear-gradient(150deg,#fb1 24%,#B71 0,#B71 26%,rgba(240,166,17,0) 0,rgba(240,166,17,0) 74%,#B71 0,#B71 76%,#fb1 0)0 0,
+    linear-gradient(30deg,#fb1 24%,#B71 0,#B71 26%,rgba(240,166,17,0) 0,rgba(240,166,17,0) 74%,#B71 0,#B71 76%,#fb1 0)0 0,
+    linear-gradient(90deg,#B71 2%,#fb1 0,#fb1 98%,#B71 0%)0 0 #fb1;
+    background-size: 40px 60px;
+}
+
 .form{
 	font: 95% Arial, Helvetica, sans-serif;
 	max-width: 400px;
@@ -14,7 +26,7 @@
 	background: #F7F7F7;
 }
 .form h1{
-	background: #f4d142;
+	background: #3c3c3c;
 	padding: 20px 0;
 	font-size: 140%;
 	font-weight: 300;
@@ -58,8 +70,8 @@
 	-moz-box-sizing: border-box;
 	width: 100%;
 	padding: 3%;
-	background: #f4d142;
-	border-bottom: 2px solid #efcf4f;
+	background: #3c3c3c;
+	border-bottom: 2px solid #2c2c2c;
 	border-top-style: none;
 	border-right-style: none;
 	border-left-style: none;
@@ -67,7 +79,7 @@
 }
 .form input[type="submit"]:hover,
 .form input[type="button"]:hover{
-	background: #efcf4f;
+	background: #2c2c2c;
 }
 
 .result {
@@ -81,11 +93,15 @@
     <div class="form">
         <h1>Jaust Url Shortener</h1>
         <form action="/shorten" method="post">
-            <input type="url" name="url" id="url" placeholder="https://www.debijenkorf.nl/">
+            <input type="url" name="url" id="url" placeholder="https://www.example.com/">
             <input type="text" name="hash" id="hash" placeholder="Optional short url">
             <input type="submit" value="Shorten" />
 
         </form>
+
+        {% if error %}
+        <div class="result"><span class="error">error: {{ error }}</span></div>
+        {% endif %}
 
         {% if hash %}
         <div class="result"><span class="hash">{{ hash }}</span></div>
