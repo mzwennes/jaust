@@ -10,7 +10,7 @@ Jaust stands for **J**ust **A**nother **U**rl **S**hortener **T**ool and the nam
 You can either run the application via `docker-compose up` or build your own Docker image. Once the application is running you can access two endpoints.
 
 * `/<id>` which gives a redirect to a given url (if it exists)
-* `/shorten/<url>` to shorten a url and get a hashed value
+* `/console` to shorten a url and get a hashed value
 
 ## Roadmap
 * Add MySQL support
