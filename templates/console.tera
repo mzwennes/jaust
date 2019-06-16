@@ -87,6 +87,10 @@
 
         </form>
 
+        {% if error %}
+        <div class="result"><span class="error">error: {{ error }}</span></div>
+        {% endif %}
+
         {% if hash %}
         <div class="result"><span class="hash">{{ hash }}</span></div>
         {% endif %}
