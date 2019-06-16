@@ -43,6 +43,7 @@ fn console() -> Template {
 
 #[post("/shorten", data = "<request>")]
 fn shorten(request: Form<UrlShortenRequest>, conn: db::Connection) -> Template {
+
     let random_hash = UrlShortener::new().next_id();
 
     let hash = match &request.hash {
@@ -55,7 +56,7 @@ fn shorten(request: Form<UrlShortenRequest>, conn: db::Connection) -> Template {
             let mut context: HashMap<&str, &str> = HashMap::new();
             context.insert("error", "the requested hash already exists");
             Template::render("console", &context)
-        }
+        },
         Some(res) => {
             let mut context: HashMap<&str, &str> = HashMap::new();
             context.insert("hash", &res.hash);
