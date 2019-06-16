@@ -1,4 +1,4 @@
-#![feature(proc_macro_hygiene, decl_macro, type_alias_enum_variants)]
+#![feature(proc_macro_hygiene, decl_macro, type_alias_enum_variants, bind_by_move_pattern_guards)]
 
 #[macro_use]
 extern crate diesel;
@@ -8,6 +8,7 @@ extern crate rocket;
 extern crate rocket_contrib;
 
 use std::collections::HashMap;
+use std::env;
 
 use rocket::http::Status;
 use rocket::request::Form;
@@ -35,7 +36,7 @@ fn lookup(id: String, conn: db::Connection) -> Result<Redirect, Status> {
     }
 }
 
-#[get("/console")]
+#[get("/")]
 fn console() -> Template {
     let context: HashMap<&str, &str> = HashMap::new();
     Template::render("console", &context)
@@ -43,7 +44,6 @@ fn console() -> Template {
 
 #[post("/shorten", data = "<request>")]
 fn shorten(request: Form<UrlShortenRequest>, conn: db::Connection) -> Template {
-
     let random_hash = UrlShortener::new().next_id();
 
     let hash = match &request.hash {
@@ -56,7 +56,7 @@ fn shorten(request: Form<UrlShortenRequest>, conn: db::Connection) -> Template {
             let mut context: HashMap<&str, &str> = HashMap::new();
             context.insert("error", "the requested hash already exists");
             Template::render("console", &context)
-        },
+        }
         Some(res) => {
             let mut context: HashMap<&str, &str> = HashMap::new();
             context.insert("hash", &res.hash);
@@ -75,12 +75,19 @@ fn not_found() -> String {
 }
 
 fn main() {
-    rocket::ignite()
+    let console_enabled = env::var("CONSOLE_ENABLED").ok();
+
+    let rocket = rocket::ignite()
         .register(catchers![not_found])
         .attach(db::Connection::fairing())
         .attach(Template::fairing())
-        .mount("/", routes!(lookup, shorten, console))
-        .launch();
+        .mount("/", routes!(lookup));
+
+    match console_enabled {
+        Some(var) if var.eq("true") =>
+            &rocket.mount("/console", routes!(console, shorten)).launch(),
+        _ => &rocket.launch()
+    };
 }
 
 #[cfg(test)]
