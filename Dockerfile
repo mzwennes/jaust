@@ -7,4 +7,6 @@ RUN cargo build --release
 
 FROM scratch
 COPY --from=builder /home/rust/src/target/x86_64-unknown-linux-musl/release/jaust /
+COPY ./Rocket.toml /
+COPY templates /templates
 CMD ["/jaust"]

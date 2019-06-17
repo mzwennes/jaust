@@ -1,8 +1,8 @@
 #![feature(proc_macro_hygiene, decl_macro, type_alias_enum_variants, bind_by_move_pattern_guards)]
 
+extern crate openssl;
 #[macro_use]
 extern crate diesel;
-extern crate openssl;
 #[macro_use]
 extern crate rocket;
 #[macro_use]

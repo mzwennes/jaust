@@ -3,7 +3,8 @@ services:
   app:
     image: zwensman/jaust:0.0.3
     environment:
-      - ROCKET_DIESEL_POSTGRES_POOL={ url = "postgres://postgres:password@db/jaust" }
+      - 'ROCKET_DATABASES={diesel_postgres_pool={url="postgres://postgres:password@db/jaust"}}'
+      - 'CONSOLE_ENABLED=true'
     ports:
       - 8000:8000
     depends_on:
