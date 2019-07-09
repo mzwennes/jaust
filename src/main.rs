@@ -33,7 +33,11 @@ struct UrlShortenRequest {
 fn lookup(id: String, conn: db::Connection) -> Result<Redirect, Status> {
     match db::urls::find_one(&conn, &id) {
         None => Err(Status::NotFound),
-        Some(res) => Ok(Redirect::to(res.url)),
+        Some(res) => {
+            // temp fix until I figure out proper url decoding/encoding
+            let decoded = res.url.replace("{", "%7B").replace("}", "%7D");
+            Ok(Redirect::permanent(decoded))
+        },
     }
 }
 
