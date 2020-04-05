@@ -1,8 +1,8 @@
-#![feature(proc_macro_hygiene, decl_macro, type_alias_enum_variants, bind_by_move_pattern_guards)]
+#![feature(proc_macro_hygiene, decl_macro)]
 
-extern crate openssl;
 #[macro_use]
 extern crate diesel;
+extern crate openssl;
 #[macro_use]
 extern crate rocket;
 #[macro_use]
@@ -16,12 +16,15 @@ use rocket::request::Form;
 use rocket::response::Redirect;
 use rocket_contrib::templates::Template;
 
+use url_parser::UrlParser;
+
 use crate::shortener::{Shortener, UrlShortener};
 
 mod shortener;
 mod schema;
 mod db;
 mod repository;
+mod url_parser;
 
 #[derive(FromForm, Debug)]
 struct UrlShortenRequest {
@@ -34,9 +37,10 @@ fn lookup(id: String, conn: db::Connection) -> Result<Redirect, Status> {
     match db::urls::find_one(&conn, &id) {
         None => Err(Status::NotFound),
         Some(res) => {
-            // temp fix until I figure out proper url decoding/encoding
-            let decoded = res.url.replace("{", "%7B").replace("}", "%7D");
-            Ok(Redirect::permanent(decoded))
+            match UrlParser::parse(res.url) {
+                Ok(url) => Ok(Redirect::permanent(url)),
+                Err(_) => Err(Status::BadRequest)
+            }
         },
     }
 }
